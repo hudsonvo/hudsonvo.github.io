@@ -11,6 +11,8 @@ function updateLocationOptions() {
   const modEl = document.getElementById('event_modality');
   const locGroup = document.getElementById('group_event_location');
   const remGroup = document.getElementById('group_event_remote_url');
+  const locInput = document.getElementById('event_location');
+  const remInput = document.getElementById('event_remote_url');
   
   if (!modEl || !locGroup || !remGroup) return;
   
@@ -18,9 +20,15 @@ function updateLocationOptions() {
     if (modEl.value === 'in-person') {
       locGroup.style.display = 'block';
       remGroup.style.display = 'none';
+      // Set required attribute based on modality
+      if (locInput) locInput.required = true;
+      if (remInput) remInput.required = false;
     } else {
       locGroup.style.display = 'none';
       remGroup.style.display = 'block';
+      // Set required attribute based on modality
+      if (locInput) locInput.required = false;
+      if (remInput) remInput.required = true;
     }
   }
   
@@ -29,6 +37,15 @@ function updateLocationOptions() {
 }
 
 function saveEvent() {
+  const form = document.getElementById('event_form');
+  
+  // Check if form is valid
+  if (!form.checkValidity()) {
+    // Show validation errors
+    form.classList.add('was-validated');
+    return; // Stop execution if form is invalid
+  }
+  
   const nameEl = document.getElementById('event_name');
   const categoryEl = document.getElementById('event_category');
   const weekdayEl = document.getElementById('event_weekday');
@@ -69,7 +86,9 @@ function saveEvent() {
     addEventToCalendarUI(eventDetails, events.length - 1);
   }
   
-  document.getElementById('event_form').reset();
+  // Reset form and remove validation classes
+  form.reset();
+  form.classList.remove('was-validated');
   
   const myModalElement = document.getElementById('event_modal');
   const myModal = bootstrap.Modal.getOrCreateInstance(myModalElement);
@@ -138,6 +157,10 @@ function createEventCard(eventDetails, eventIndex) {
 function openEditModal(eventIndex) {
   editingEventIndex = eventIndex;
   const event = events[eventIndex];
+  const form = document.getElementById('event_form');
+  
+  // Remove validation classes when opening for edit
+  form.classList.remove('was-validated');
   
   // Pre-fill the form with existing event data
   document.getElementById('event_name').value = event.name;
@@ -148,9 +171,14 @@ function openEditModal(eventIndex) {
   
   if (event.location) {
     document.getElementById('event_location').value = event.location;
+  } else {
+    document.getElementById('event_location').value = '';
   }
+  
   if (event.remote_url) {
     document.getElementById('event_remote_url').value = event.remote_url;
+  } else {
+    document.getElementById('event_remote_url').value = '';
   }
   
   document.getElementById('event_attendees').value = event.attendees;
